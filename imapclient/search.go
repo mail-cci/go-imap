@@ -252,6 +252,12 @@ func writeSearchKey(enc *imapwire.Encoder, criteria *imap.SearchCriteria) {
 		writeSearchKey(enc, &not)
 		enc.Special(')')
 	}
+	for _, it := range criteria.InThread {
+		encodeItem().Atom("INTHREAD").SP().Atom(string(it.Algorithm)).SP()
+		enc.Special('(')
+		writeSearchKey(enc, &it.Criteria)
+		enc.Special(')')
+	}
 	for _, or := range criteria.Or {
 		encodeItem().Atom("OR").SP()
 		enc.Special('(')
@@ -380,6 +386,11 @@ func searchCriteriaIsASCII(criteria *imap.SearchCriteria) bool {
 	}
 	for _, not := range criteria.Not {
 		if !searchCriteriaIsASCII(&not) {
+			return false
+		}
+	}
+	for _, it := range criteria.InThread {
+		if !searchCriteriaIsASCII(&it.Criteria) {
 			return false
 		}
 	}

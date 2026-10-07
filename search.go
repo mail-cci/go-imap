@@ -58,7 +58,18 @@ type SearchCriteria struct {
 	Not []SearchCriteria
 	Or  [][2]SearchCriteria
 
+	// InThread restricts the search to whole threads (Dovecot INTHREAD extension,
+	// draft-ietf-morg-inthread): every message of a thread containing a message
+	// that matches Criteria is returned.
+	InThread []SearchCriteriaInThread
+
 	ModSeq *SearchCriteriaModSeq // requires CONDSTORE
+}
+
+// SearchCriteriaInThread is an INTHREAD search key.
+type SearchCriteriaInThread struct {
+	Algorithm ThreadAlgorithm
+	Criteria  SearchCriteria
 }
 
 // And intersects two search criteria.
@@ -86,6 +97,7 @@ func (criteria *SearchCriteria) And(other *SearchCriteria) {
 	}
 
 	criteria.Not = append(criteria.Not, other.Not...)
+	criteria.InThread = append(criteria.InThread, other.InThread...)
 	criteria.Or = append(criteria.Or, other.Or...)
 }
 
